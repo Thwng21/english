@@ -1007,64 +1007,146 @@
     ]
   };
 
-  var curCat = Object.keys(DATA)[0];
+var curCat = Object.keys(DATA)[0];
   var list = DATA[curCat];
   var idx = Math.floor(Math.random() * list.length);
-  var isCollapsed = false;
+  var streak = 0;
 
   var el = document.createElement('div');
   el.id = '__learn_box';
 
   var optionsHTML = Object.keys(DATA).map(function(k){
-    return '<option value="' + k + '">' + k + '</option>';
+    return '<option value="' + k + '" style="background:#0f172a;color:#fff;">' + k + '</option>';
   }).join('');
 
+  // Thiết kế dạng Subtitle hoàn toàn không khung, chữ nổi bật, có hiệu ứng hover
   el.innerHTML = `
     <style>
-      #__learn_box_inner {
+      #__learn_hud {
+        position: fixed;
+        bottom: 35px;
+        left: 50%;
+        transform: translateX(-50%);
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        position: fixed; bottom: 24px; right: 24px; width: 340px;
-        background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-        border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 16px;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
-        color: #f8fafc; padding: 16px; z-index: 999999;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); user-select: none;
+        z-index: 999999;
+        text-align: center;
+        pointer-events: none; /* Cho phép click xuyên qua vùng trống */
+        width: 100%;
+        max-width: 750px;
+        padding: 0 20px;
+        box-sizing: border-box;
       }
-      #__learn_box_inner:hover {
-        background: rgba(15, 23, 42, 0.85); border-color: rgba(99, 102, 241, 0.4);
-        box-shadow: 0 20px 40px rgba(0,0,0,0.5), 0 0 20px rgba(99, 102, 241, 0.25);
+      .__l_hud_container {
+        pointer-events: auto; /* Chỉ cho phép tương tác trực tiếp lên bảng chữ */
+        background: rgba(10, 15, 30, 0.45);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        padding: 14px 24px;
+        border-radius: 99px; /* Bo tròn hoàn toàn dạng viên thuốc */
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       }
-      .__l_header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; cursor: move; }
-      .__l_select { background: rgba(30, 41, 59, 0.7); color: #e2e8f0; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 4px 8px; font-size: 11px; font-weight: 500; outline: none; cursor: pointer; }
-      .__l_btn_icon { background: transparent; border: none; color: #94a3b8; font-size: 14px; cursor: pointer; padding: 2px 6px; border-radius: 6px; }
-      .__l_btn_icon:hover { color: #f8fafc; background: rgba(255,255,255,0.1); }
-      .__l_card { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 12px; margin-bottom: 12px; }
-      .__l_question { font-size: 14px; font-weight: 600; line-height: 1.5; color: #38bdf8; margin-bottom: 6px; display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
-      .__l_answer { font-size: 13px; line-height: 1.5; color: #cbd5e1; background: rgba(0,0,0,0.2); padding: 8px 10px; border-radius: 8px; border-left: 3px solid #818cf8; display: none; }
-      .__l_actions { display: flex; gap: 8px; }
-      .__l_btn_primary { flex: 1; background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%); border: none; color: #ffffff; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; }
-      .__l_btn_secondary { background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(255, 255, 255, 0.1); color: #e2e8f0; padding: 8px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; }
+      .__l_hud_container:hover {
+        background: rgba(10, 15, 30, 0.85);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7), 0 0 25px rgba(56, 189, 248, 0.3), inset 0 0 0 1px rgba(56, 189, 248, 0.4);
+      }
+      .__l_top_bar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 11px;
+        color: #94a3b8;
+      }
+      .__l_select {
+        background: transparent;
+        color: #38bdf8;
+        border: none;
+        font-weight: 600;
+        font-size: 11px;
+        outline: none;
+        cursor: pointer;
+        text-align: center;
+      }
+      .__l_streak {
+        color: #fbbf24;
+        font-weight: 700;
+      }
+      .__l_question {
+        font-size: 15px;
+        font-weight: 600;
+        color: #f8fafc;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        margin: 2px 0;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .__l_answer {
+        font-size: 13px;
+        color: #34d399;
+        text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+        display: none;
+        font-weight: 500;
+      }
+      .__l_controls {
+        display: flex;
+        gap: 8px;
+        margin-top: 4px;
+        opacity: 0.8;
+        transition: opacity 0.2s;
+      }
+      .__l_hud_container:hover .__l_controls { opacity: 1; }
+      .__l_btn {
+        background: rgba(255, 255, 255, 0.1);
+        border: none;
+        color: #e2e8f0;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .__l_btn:hover {
+        background: #38bdf8;
+        color: #0f172a;
+      }
+      .__l_close_btn {
+        background: transparent;
+        border: none;
+        color: #64748b;
+        cursor: pointer;
+        font-size: 14px;
+        padding: 0 4px;
+      }
+      .__l_close_btn:hover { color: #f8fafc; }
     </style>
 
-    <div id="__learn_box_inner">
-      <div class="__l_header" id="__l_drag">
-        <select id="__l_cat" class="__l_select">${optionsHTML}</select>
-        <div>
-          <button id="__l_min" class="__l_btn_icon" title="Thu gọn">─</button>
-          <button id="__l_close" class="__l_btn_icon" title="Tắt">✕</button>
+    <div id="__learn_hud">
+      <div class="__l_hud_container">
+        <div class="__l_top_bar">
+          <select id="__l_cat" class="__l_select">${optionsHTML}</select>
+          <span>•</span>
+          <span class="__l_streak" id="__l_streak_text">🔥 Streak: 0</span>
+          <span>•</span>
+          <button id="__l_close" class="__l_close_btn" title="Tắt">✕</button>
         </div>
-      </div>
-      <div id="__l_body">
-        <div class="__l_card">
-          <div class="__l_question">
-            <span id="__l_q"></span>
-            <button id="__l_tts" class="__l_btn_icon" title="Phát âm AI">🔊</button>
-          </div>
-          <div id="__l_a" class="__l_answer"></div>
+        
+        <div class="__l_question" id="__l_q_wrap" title="Click để lật xem nghĩa">
+          <span id="__l_q"></span>
+          <span id="__l_tts" style="cursor:pointer; font-size:13px;" title="Nghe phát âm">🔊</span>
         </div>
-        <div class="__l_actions">
-          <button id="__l_flip" class="__l_btn_primary">Xem dịch</button>
-          <button id="__l_next" class="__l_btn_secondary">⏭ Next</button>
+        
+        <div id="__l_a" class="__l_answer"></div>
+
+        <div class="__l_controls">
+          <button id="__l_flip" class="__l_btn">Lật nghĩa (Space)</button>
+          <button id="__l_next" class="__l_btn">Tiếp theo (→)</button>
         </div>
       </div>
     </div>
@@ -1072,20 +1154,22 @@
 
   document.body.appendChild(el);
 
-  var inner = document.getElementById('__learn_box_inner');
   var qBox = document.getElementById('__l_q');
   var aBox = document.getElementById('__l_a');
   var flipBtn = document.getElementById('__l_flip');
+  var streakText = document.getElementById('__l_streak_text');
 
   function render(){
     var item = list[idx];
     qBox.innerText = item[0];
     aBox.innerText = item[1];
     aBox.style.display = 'none';
-    flipBtn.innerText = 'Xem dịch';
+    flipBtn.innerText = 'Lật nghĩa (Space)';
   }
+
   render();
 
+  // Đổi danh mục
   document.getElementById('__l_cat').onchange = function(){
     curCat = this.value;
     list = DATA[curCat];
@@ -1093,22 +1177,34 @@
     render();
   };
 
-  flipBtn.onclick = function(){
+  // Lật nghĩa
+  function toggleFlip(){
     if(aBox.style.display === 'none'){
       aBox.style.display = 'block';
-      this.innerText = 'Ẩn dịch';
+      flipBtn.innerText = 'Ẩn nghĩa';
     } else {
       aBox.style.display = 'none';
-      this.innerText = 'Xem dịch';
+      flipBtn.innerText = 'Lật nghĩa (Space)';
     }
+  }
+
+  flipBtn.onclick = toggleFlip;
+  document.getElementById('__l_q_wrap').onclick = function(e){
+    if(e.target.id === '__l_tts') return;
+    toggleFlip();
   };
 
+  // Next bài + Tăng streak 🔥
   document.getElementById('__l_next').onclick = function(){
     idx = Math.floor(Math.random() * list.length);
+    streak++;
+    streakText.innerText = "🔥 Streak: " + streak;
     render();
   };
 
-  document.getElementById('__l_tts').onclick = function(){
+  // Phát âm AI
+  document.getElementById('__l_tts').onclick = function(e){
+    e.stopPropagation();
     var text = list[idx][0];
     var utter = new SpeechSynthesisUtterance(text);
     utter.lang = 'en-US';
@@ -1116,39 +1212,22 @@
     window.speechSynthesis.speak(utter);
   };
 
-  document.getElementById('__l_min').onclick = function(){
-    var b = document.getElementById('__l_body');
-    if(!isCollapsed){
-      b.style.display = 'none';
-      inner.style.width = '160px';
-      this.innerText = '▢';
-      isCollapsed = true;
-    } else {
-      b.style.display = 'block';
-      inner.style.width = '340px';
-      this.innerText = '─';
-      isCollapsed = false;
+  // Phím tắt thông minh (Space để lật, Mũi tên phải để Next)
+  document.onkeydown = function(e){
+    if(e.code === 'Space' && document.activeElement.tagName !== 'INPUT'){
+      e.preventDefault();
+      toggleFlip();
+    } else if(e.code === 'ArrowRight'){
+      document.getElementById('__l_next').click();
     }
   };
 
-  var isDragging = false, offset = [0,0];
-  var dragHeader = document.getElementById('__l_drag');
-  dragHeader.onmousedown = function(e){
-    if(e.target.tagName === 'SELECT' || e.target.tagName === 'BUTTON') return;
-    isDragging = true;
-    offset = [inner.offsetLeft - e.clientX, inner.offsetTop - e.clientY];
-  };
-  document.onmousemove = function(e){
-    if(isDragging){
-      inner.style.left = (e.clientX + offset[0]) + 'px';
-      inner.style.top = (e.clientY + offset[1]) + 'px';
-      inner.style.bottom = 'auto';
-      inner.style.right = 'auto';
-    }
-  };
-  document.onmouseup = function(){ isDragging = false; };
+  // Đóng
+  function clean(){
+    document.onkeydown = null;
+    if(el && el.parentNode) el.parentNode.removeChild(el);
+  }
 
-  function clean(){ if(el && el.parentNode) el.parentNode.removeChild(el); }
   document.getElementById('__l_close').onclick = clean;
   window.__LEARN = { s: clean };
 })();
