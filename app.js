@@ -1006,8 +1006,7 @@
       // --- ĐÂY LÀ PHẦN KẾT THÚC FILE APP.JS ---
     ]
   };
-
-var curCat = Object.keys(DATA)[0];
+  var curCat = Object.keys(DATA)[0];
   var list = DATA[curCat];
   var idx = Math.floor(Math.random() * list.length);
   var streak = 0;
@@ -1019,7 +1018,6 @@ var curCat = Object.keys(DATA)[0];
     return '<option value="' + k + '" style="background:#0f172a;color:#fff;">' + k + '</option>';
   }).join('');
 
-  // Thiết kế dạng Subtitle hoàn toàn không khung, chữ nổi bật, có hiệu ứng hover
   el.innerHTML = `
     <style>
 #__learn_hud {
@@ -1028,9 +1026,9 @@ var curCat = Object.keys(DATA)[0];
   left: 50%;
   transform: translateX(-50%);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  z-index: 2147483647;          /* max z-index, nổi trên mọi site */
+  z-index: 2147483647;
   text-align: center;
-  pointer-events: none;         /* click xuyên qua toàn bộ vùng ngoài */
+  pointer-events: none;
   width: 100%;
   max-width: 760px;
   padding: 0 16px;
@@ -1038,9 +1036,9 @@ var curCat = Object.keys(DATA)[0];
 }
 
 .__l_hud_container {
-  pointer-events: auto;         /* chỉ phần chữ bắt sự kiện */
-  background: transparent;      /* KHÔNG nền */
-  backdrop-filter: none;        /* KHÔNG làm mờ nền */
+  pointer-events: auto;
+  background: transparent;
+  backdrop-filter: none;
   -webkit-backdrop-filter: none;
   padding: 8px 18px;
   border-radius: 18px;
@@ -1048,13 +1046,12 @@ var curCat = Object.keys(DATA)[0];
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  /* Chỉ dùng text-shadow + drop-shadow để chữ nổi, không che nền */
   filter: drop-shadow(0 2px 6px rgba(0,0,0,0.85));
-  transition: transform .2s ease;
+  transition: filter .2s ease;
+  max-width: 100%;
 }
 
 .__l_hud_container:hover {
-  transform: translateY(-1px);
   filter: drop-shadow(0 4px 12px rgba(0,0,0,0.95))
           drop-shadow(0 0 8px rgba(56,189,248,0.35));
 }
@@ -1066,6 +1063,20 @@ var curCat = Object.keys(DATA)[0];
   font-size: 11px;
   color: #cbd5e1;
   text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+  padding: 2px 4px;
+  border-radius: 8px;
+}
+.__l_top_bar:active { cursor: grabbing; }
+
+.__l_drag_dots {
+  color: #94a3b8;
+  font-size: 13px;
+  letter-spacing: -1px;
+  opacity: .7;
 }
 
 .__l_select {
@@ -1077,6 +1088,7 @@ var curCat = Object.keys(DATA)[0];
   outline: none;
   cursor: pointer;
   text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+  max-width: 220px;
 }
 
 .__l_streak {
@@ -1089,7 +1101,6 @@ var curCat = Object.keys(DATA)[0];
   font-size: 16px;
   font-weight: 700;
   color: #ffffff;
-  /* viền chữ để nổi trên mọi nền sáng/tối */
   text-shadow:
      0 0 2px #000,
      0 1px 2px #000,
@@ -1100,11 +1111,13 @@ var curCat = Object.keys(DATA)[0];
   align-items: center;
   gap: 8px;
   line-height: 1.35;
+  text-align: center;
+  justify-content: center;
 }
 
 .__l_answer {
   font-size: 13.5px;
-  color: #4ade80;               /* xanh lá sáng */
+  color: #4ade80;
   text-shadow:
      0 0 2px #000,
      0 1px 2px #000,
@@ -1113,6 +1126,7 @@ var curCat = Object.keys(DATA)[0];
   font-weight: 600;
   line-height: 1.4;
   max-width: 720px;
+  text-align: center;
 }
 
 .__l_controls {
@@ -1125,7 +1139,7 @@ var curCat = Object.keys(DATA)[0];
 .__l_hud_container:hover .__l_controls { opacity: 1; }
 
 .__l_btn {
-  background: rgba(255,255,255,0.10);   /* rất nhẹ, không che nền */
+  background: rgba(255,255,255,0.10);
   border: 1px solid rgba(255,255,255,0.18);
   color: #e2e8f0;
   padding: 3px 10px;
@@ -1152,19 +1166,20 @@ var curCat = Object.keys(DATA)[0];
 
     <div id="__learn_hud">
       <div class="__l_hud_container">
-        <div class="__l_top_bar">
+        <div class="__l_top_bar" id="__l_drag_handle" title="Giữ và kéo để di chuyển">
+          <span class="__l_drag_dots">⠿</span>
           <select id="__l_cat" class="__l_select">${optionsHTML}</select>
           <span>•</span>
           <span class="__l_streak" id="__l_streak_text">🔥 Streak: 0</span>
           <span>•</span>
           <button id="__l_close" class="__l_close_btn" title="Tắt">✕</button>
         </div>
-        
+
         <div class="__l_question" id="__l_q_wrap" title="Click để lật xem nghĩa">
           <span id="__l_q"></span>
           <span id="__l_tts" style="cursor:pointer; font-size:13px;" title="Nghe phát âm">🔊</span>
         </div>
-        
+
         <div id="__l_a" class="__l_answer"></div>
 
         <div class="__l_controls">
@@ -1181,6 +1196,8 @@ var curCat = Object.keys(DATA)[0];
   var aBox = document.getElementById('__l_a');
   var flipBtn = document.getElementById('__l_flip');
   var streakText = document.getElementById('__l_streak_text');
+  var hudContainer = document.querySelector('.__l_hud_container');
+  var dragHandle = document.getElementById('__l_drag_handle');
 
   function render(){
     var item = list[idx];
@@ -1225,30 +1242,147 @@ var curCat = Object.keys(DATA)[0];
     render();
   };
 
-  // Phát âm AI
+  // ============ GIỌNG ĐỌC CHẤT LƯỢNG CAO ============
+  var cachedVoices = [];
+  var voicesReady = false;
+
+  function loadVoices(){
+    var voices = window.speechSynthesis.getVoices();
+    if (voices.length > 0){
+      cachedVoices = voices;
+      voicesReady = true;
+    }
+  }
+  loadVoices();
+  if (typeof window.speechSynthesis.onvoiceschanged !== 'undefined'){
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+  }
+
+  function getBestEnglishVoice(){
+    if (!voicesReady) loadVoices();
+    if (cachedVoices.length === 0) return null;
+
+    var preferred = [
+      'Google US English',
+      'Google UK English Female',
+      'Google UK English Male',
+      'Samantha',
+      'Alex',
+      'Microsoft Aria Online (Natural)',
+      'Microsoft Jenny Online (Natural)',
+      'Microsoft Guy Online (Natural)',
+      'Microsoft Zira Desktop',
+      'Microsoft David Desktop'
+    ];
+    for (var i = 0; i < preferred.length; i++){
+      var found = cachedVoices.find(function(v){
+        return v.name.indexOf(preferred[i]) !== -1;
+      });
+      if (found) return found;
+    }
+    // Ưu tiên giọng có chữ "Natural" hoặc "Neural" (chất lượng cao)
+    var natural = cachedVoices.find(function(v){
+      return /natural|neural/i.test(v.name) && v.lang.indexOf('en') === 0;
+    });
+    if (natural) return natural;
+
+    return cachedVoices.find(function(v){
+      return v.lang === 'en-US' || v.lang === 'en-GB';
+    }) || cachedVoices.find(function(v){
+      return v.lang && v.lang.indexOf('en') === 0;
+    }) || null;
+  }
+
+  // Phát âm
   document.getElementById('__l_tts').onclick = function(e){
     e.stopPropagation();
     var text = list[idx][0];
     var utter = new SpeechSynthesisUtterance(text);
     utter.lang = 'en-US';
-    utter.rate = 0.9;
+    utter.rate = 0.92;      // chậm hơn chút, tự nhiên hơn
+    utter.pitch = 1.0;
+    utter.volume = 1.0;
+
+    var bestVoice = getBestEnglishVoice();
+    if (bestVoice){
+      utter.voice = bestVoice;
+      utter.lang = bestVoice.lang || 'en-US';
+    }
+
+    window.speechSynthesis.cancel();
     window.speechSynthesis.speak(utter);
   };
 
-  // Phím tắt thông minh (Space để lật, Mũi tên phải để Next)
-  document.onkeydown = function(e){
-    if(e.code === 'Space' && document.activeElement.tagName !== 'INPUT'){
+  // ============ KÉO THẢ TỰ DO ============
+  var isDragging = false;
+  var offsetX = 0, offsetY = 0;
+  var hasMoved = false;
+
+  dragHandle.addEventListener('pointerdown', function(e){
+    if (e.button !== 0 && e.pointerType === 'mouse') return;
+    // Không kéo khi nhấn vào select hoặc nút close
+    if (e.target.tagName === 'SELECT' || e.target.id === '__l_close') return;
+
+    isDragging = true;
+    hasMoved = false;
+    var rect = hudContainer.getBoundingClientRect();
+    offsetX = e.clientX - rect.left;
+    offsetY = e.clientY - rect.top;
+
+    dragHandle.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  });
+
+  dragHandle.addEventListener('pointermove', function(e){
+    if (!isDragging) return;
+    hasMoved = true;
+
+    var newLeft = e.clientX - offsetX;
+    var newTop = e.clientY - offsetY;
+
+    var maxLeft = window.innerWidth - hudContainer.offsetWidth;
+    var maxTop = window.innerHeight - hudContainer.offsetHeight;
+    newLeft = Math.max(0, Math.min(newLeft, maxLeft));
+    newTop = Math.max(0, Math.min(newTop, maxTop));
+
+    hudContainer.style.position = 'fixed';
+    hudContainer.style.left = newLeft + 'px';
+    hudContainer.style.top = newTop + 'px';
+    hudContainer.style.bottom = 'auto';
+    hudContainer.style.right = 'auto';
+    hudContainer.style.transform = 'none';
+    hudContainer.style.margin = '0';
+    hudContainer.style.width = 'auto';
+    // Cho phép chữ xuống dòng gọn khi kéo ra khỏi vùng căn giữa
+    hudContainer.style.maxWidth = 'min(760px, calc(100vw - 20px))';
+  });
+
+  function endDrag(e){
+    if (!isDragging) return;
+    isDragging = false;
+    try { dragHandle.releasePointerCapture(e.pointerId); } catch(_){}
+  }
+  dragHandle.addEventListener('pointerup', endDrag);
+  dragHandle.addEventListener('pointercancel', endDrag);
+
+  // ============ PHÍM TẮT ============
+  function onKey(e){
+    var tag = document.activeElement && document.activeElement.tagName;
+    if (e.code === 'Space' && tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT'){
       e.preventDefault();
       toggleFlip();
-    } else if(e.code === 'ArrowRight'){
+    } else if (e.code === 'ArrowRight' && tag !== 'INPUT' && tag !== 'TEXTAREA'){
       document.getElementById('__l_next').click();
     }
-  };
+  }
+  document.addEventListener('keydown', onKey, true);
 
   // Đóng
   function clean(){
-    document.onkeydown = null;
+    document.removeEventListener('keydown', onKey, true);
+    try { window.speechSynthesis.cancel(); } catch(_){}
     if(el && el.parentNode) el.parentNode.removeChild(el);
+    window.__LEARN = null;
   }
 
   document.getElementById('__l_close').onclick = clean;
