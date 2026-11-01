@@ -1022,109 +1022,132 @@ var curCat = Object.keys(DATA)[0];
   // Thiết kế dạng Subtitle hoàn toàn không khung, chữ nổi bật, có hiệu ứng hover
   el.innerHTML = `
     <style>
-      #__learn_hud {
-        position: fixed;
-        bottom: 35px;
-        left: 50%;
-        transform: translateX(-50%);
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        z-index: 999999;
-        text-align: center;
-        pointer-events: none; /* Cho phép click xuyên qua vùng trống */
-        width: 100%;
-        max-width: 750px;
-        padding: 0 20px;
-        box-sizing: border-box;
-      }
-      .__l_hud_container {
-        pointer-events: auto; /* Chỉ cho phép tương tác trực tiếp lên bảng chữ */
-        background: rgba(10, 15, 30, 0.45);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        padding: 14px 24px;
-        border-radius: 99px; /* Bo tròn hoàn toàn dạng viên thuốc */
-        display: inline-flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 6px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.15);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      }
-      .__l_hud_container:hover {
-        background: rgba(10, 15, 30, 0.85);
-        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7), 0 0 25px rgba(56, 189, 248, 0.3), inset 0 0 0 1px rgba(56, 189, 248, 0.4);
-      }
-      .__l_top_bar {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        font-size: 11px;
-        color: #94a3b8;
-      }
-      .__l_select {
-        background: transparent;
-        color: #38bdf8;
-        border: none;
-        font-weight: 600;
-        font-size: 11px;
-        outline: none;
-        cursor: pointer;
-        text-align: center;
-      }
-      .__l_streak {
-        color: #fbbf24;
-        font-weight: 700;
-      }
-      .__l_question {
-        font-size: 15px;
-        font-weight: 600;
-        color: #f8fafc;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.8);
-        margin: 2px 0;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-      .__l_answer {
-        font-size: 13px;
-        color: #34d399;
-        text-shadow: 0 1px 3px rgba(0,0,0,0.8);
-        display: none;
-        font-weight: 500;
-      }
-      .__l_controls {
-        display: flex;
-        gap: 8px;
-        margin-top: 4px;
-        opacity: 0.8;
-        transition: opacity 0.2s;
-      }
-      .__l_hud_container:hover .__l_controls { opacity: 1; }
-      .__l_btn {
-        background: rgba(255, 255, 255, 0.1);
-        border: none;
-        color: #e2e8f0;
-        padding: 4px 10px;
-        border-radius: 20px;
-        font-size: 11px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s;
-      }
-      .__l_btn:hover {
-        background: #38bdf8;
-        color: #0f172a;
-      }
-      .__l_close_btn {
-        background: transparent;
-        border: none;
-        color: #64748b;
-        cursor: pointer;
-        font-size: 14px;
-        padding: 0 4px;
-      }
-      .__l_close_btn:hover { color: #f8fafc; }
+#__learn_hud {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  z-index: 2147483647;          /* max z-index, nổi trên mọi site */
+  text-align: center;
+  pointer-events: none;         /* click xuyên qua toàn bộ vùng ngoài */
+  width: 100%;
+  max-width: 760px;
+  padding: 0 16px;
+  box-sizing: border-box;
+}
+
+.__l_hud_container {
+  pointer-events: auto;         /* chỉ phần chữ bắt sự kiện */
+  background: transparent;      /* KHÔNG nền */
+  backdrop-filter: none;        /* KHÔNG làm mờ nền */
+  -webkit-backdrop-filter: none;
+  padding: 8px 18px;
+  border-radius: 18px;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  /* Chỉ dùng text-shadow + drop-shadow để chữ nổi, không che nền */
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.85));
+  transition: transform .2s ease;
+}
+
+.__l_hud_container:hover {
+  transform: translateY(-1px);
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.95))
+          drop-shadow(0 0 8px rgba(56,189,248,0.35));
+}
+
+.__l_top_bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+  color: #cbd5e1;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+}
+
+.__l_select {
+  background: transparent;
+  color: #38bdf8;
+  border: none;
+  font-weight: 700;
+  font-size: 11px;
+  outline: none;
+  cursor: pointer;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+}
+
+.__l_streak {
+  color: #fbbf24;
+  font-weight: 700;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+}
+
+.__l_question {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  /* viền chữ để nổi trên mọi nền sáng/tối */
+  text-shadow:
+     0 0 2px #000,
+     0 1px 2px #000,
+     0 2px 6px rgba(0,0,0,0.9);
+  margin: 2px 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1.35;
+}
+
+.__l_answer {
+  font-size: 13.5px;
+  color: #4ade80;               /* xanh lá sáng */
+  text-shadow:
+     0 0 2px #000,
+     0 1px 2px #000,
+     0 2px 6px rgba(0,0,0,0.9);
+  display: none;
+  font-weight: 600;
+  line-height: 1.4;
+  max-width: 720px;
+}
+
+.__l_controls {
+  display: flex;
+  gap: 8px;
+  margin-top: 2px;
+  opacity: .55;
+  transition: opacity .2s;
+}
+.__l_hud_container:hover .__l_controls { opacity: 1; }
+
+.__l_btn {
+  background: rgba(255,255,255,0.10);   /* rất nhẹ, không che nền */
+  border: 1px solid rgba(255,255,255,0.18);
+  color: #e2e8f0;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .2s;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+}
+.__l_btn:hover { background: #38bdf8; color: #0f172a; }
+
+.__l_close_btn {
+  background: transparent;
+  border: none;
+  color: #e2e8f0;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 0 4px;
+  text-shadow: 0 1px 3px #000;
+}
+.__l_close_btn:hover { color: #f87171; }
     </style>
 
     <div id="__learn_hud">
