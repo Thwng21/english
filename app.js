@@ -1189,7 +1189,6 @@
       </div>
     </div>
   `;
-
 document.body.appendChild(el);
 
   var qBox = document.getElementById('__l_q');
@@ -1313,83 +1312,88 @@ document.body.appendChild(el);
     window.speechSynthesis.speak(utter);
   };
 
-  // ============ KÉO THẢ TỰ DO (ĐÃ CHỈNH SỬA) ============
+  // ============ KÉO THẢ TỰ DO (ĐÃ FIX TRIỆT ĐỂ) ============
   var isDragging = false;
-  var offsetX = 0, offsetY = 0;
-  var pointerId = null;
+  var startX = 0, startY = 0;
+  var initialLeft = 0, initialTop = 0;
+  var hasMoved = false;
 
-  // Ngăn trình duyệt cuộn/zoom khi kéo trên thiết bị cảm ứng
-  dragHandle.style.touchAction = 'none';
+  // Chống bôi đen chữ khi kéo
+  dragHandle.style.userSelect = 'none';
+  dragHandle.style.webkitUserSelect = 'none';
   dragHandle.style.cursor = 'grab';
 
-  dragHandle.addEventListener('pointerdown', function(e){
-    // Chỉ kéo bằng chuột trái hoặc touch/pen
-    if (e.pointerType === 'mouse' && e.button !== 0) return;
-    // Bỏ qua nếu nhấn vào select hoặc nút close nằm trong vùng handle
-    if (e.target.tagName === 'SELECT' || e.target.id === '__l_close') return;
+  dragHandle.addEventListener('mousedown', function(e) {
+    // Chỉ kéo bằng chuột trái, bỏ qua nếu bấm vào nút Close hoặc Select
+    if (e.button !== 0 || e.target.tagName === 'SELECT' || e.target.id === '__l_close') return;
 
     isDragging = true;
-    pointerId = e.pointerId;
+    hasMoved = false;
+    startX = e.clientX;
+    startY = e.clientY;
 
     var rect = hudContainer.getBoundingClientRect();
-    offsetX = e.clientX - rect.left;
-    offsetY = e.clientY - rect.top;
+    initialLeft = rect.left;
+    initialTop = rect.top;
 
-    // Chuyển sang fixed ngay từ đầu để toạ độ clientX/clientY khớp chính xác
+    // Chuyển hộp thoại sang fixed để toạ độ không bị lệch
     hudContainer.style.position = 'fixed';
-    hudContainer.style.left = rect.left + 'px';
-    hudContainer.style.top = rect.top + 'px';
+    hudContainer.style.margin = '0';
+    hudContainer.style.transform = 'none';
+    hudContainer.style.left = initialLeft + 'px';
+    hudContainer.style.top = initialTop + 'px';
     hudContainer.style.bottom = 'auto';
     hudContainer.style.right = 'auto';
-    hudContainer.style.transform = 'none';
-    hudContainer.style.margin = '0';
-    hudContainer.style.width = 'auto';
-    hudContainer.style.maxWidth = 'min(760px, calc(100vw - 20px))';
-
-    dragHandle.setPointerCapture(e.pointerId);
+    
     dragHandle.style.cursor = 'grabbing';
-    e.preventDefault();
+    e.preventDefault(); // Ngăn trình duyệt bôi đen
   });
 
-  dragHandle.addEventListener('pointermove', function(e){
-    if (!isDragging || e.pointerId !== pointerId) return;
+  // Lắng nghe sự kiện di chuyển trên toàn bộ trang để không bao giờ bị mất chuột
+  document.addEventListener('mousemove', function(e) {
+    if (!isDragging) return;
 
-    var newLeft = e.clientX - offsetX;
-    var newTop = e.clientY - offsetY;
+    var deltaX = e.clientX - startX;
+    var deltaY = e.clientY - startY;
 
-    // Giới hạn trong viewport (tránh kéo ra ngoài màn hình)
-    var maxLeft = window.innerWidth - hudContainer.offsetWidth;
-    var maxTop = window.innerHeight - hudContainer.offsetHeight;
-    newLeft = Math.max(0, Math.min(newLeft, maxLeft));
-    newTop = Math.max(0, Math.min(newTop, maxTop));
+    // Di chuyển quá 3px mới tính là kéo (tránh click nhầm)
+    if (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3) {
+      hasMoved = true;
+    }
 
-    hudContainer.style.left = newLeft + 'px';
-    hudContainer.style.top = newTop + 'px';
+    if (hasMoved) {
+      var newLeft = initialLeft + deltaX;
+      var newTop = initialTop + deltaY;
+
+      // Giới hạn không cho kéo văng ra ngoài màn hình
+      var maxLeft = window.innerWidth - hudContainer.offsetWidth;
+      var maxTop = window.innerHeight - hudContainer.offsetHeight;
+      newLeft = Math.max(0, Math.min(newLeft, maxLeft));
+      newTop = Math.max(0, Math.min(newTop, maxTop));
+
+      hudContainer.style.left = newLeft + 'px';
+      hudContainer.style.top = newTop + 'px';
+    }
   });
 
-  function endDrag(e){
-    if (!isDragging || (e && e.pointerId !== pointerId)) return;
+  document.addEventListener('mouseup', function(e) {
+    if (!isDragging) return;
     isDragging = false;
-    pointerId = null;
     dragHandle.style.cursor = 'grab';
-    try { dragHandle.releasePointerCapture(e.pointerId); } catch(_){}
-  }
-  dragHandle.addEventListener('pointerup', endDrag);
-  dragHandle.addEventListener('pointercancel', endDrag);
-  // Trường hợp pointerup xảy ra ngoài handle dù đã capture
-  window.addEventListener('pointerup', endDrag);
-  window.addEventListener('pointercancel', endDrag);
 
-  // Giữ vị trí hợp lệ khi resize cửa sổ
-  window.addEventListener('resize', function(){
-    if (hudContainer.style.position !== 'fixed') return;
-    var rect = hudContainer.getBoundingClientRect();
-    var maxLeft = window.innerWidth - rect.width;
-    var maxTop = window.innerHeight - rect.height;
-    hudContainer.style.left = Math.max(0, Math.min(rect.left, maxLeft)) + 'px';
-    hudContainer.style.top  = Math.max(0, Math.min(rect.top, maxTop)) + 'px';
-    hudContainer.style.maxWidth = 'min(760px, calc(100vw - 20px))';
+    // Nếu người dùng đã kéo, chặn sự kiện click để không bị bấm nhầm nút Close
+    if (hasMoved) {
+      var preventClick = function(ev) {
+        ev.stopPropagation();
+        ev.preventDefault();
+      };
+      dragHandle.addEventListener('click', preventClick, { capture: true, once: true });
+      setTimeout(function() {
+        dragHandle.removeEventListener('click', preventClick, { capture: true });
+      }, 50);
+    }
   });
+  // ============ KẾT THÚC KÉO THẢ ============
 
   // ============ PHÍM TẮT ============
   function onKey(e){
